@@ -1,0 +1,39 @@
+
+To design a datastore to save monitoring data of a service, we can use a time series database. 
+This type of database is optimized for storing and querying large amounts of time-stamped data, which is exactly what we need to store monitoring data for a service.
+
+To store the data, we could use a table with the following columns:
+
+API ID: a unique identifier for each API
+User ID: a unique identifier for each user
+Timestamp: the time when the request was made
+Response time: the time it took for the API to respond to the request
+Success/failure: a boolean indicating whether the request was successful or not
+The table would be populated with data for each request made to the service. 
+With 100 APIs and 1000 users, we would expect to have around 1 million rows in the table per day.
+
+To answer the sample queries, we can use the following SQL statements:
+
+Get the API with maximum average response time across the users:
+-----------------------------------------------------------------------------------------------------------------------------------------------
+SELECT API_ID, AVG(response_time) as avg_response_time
+FROM monitoring_data
+GROUP BY API_ID
+ORDER BY avg_response_time DESC
+LIMIT 1
+-----------------------------------------------------------------------------------------------------------------------------------------------
+Get the API with maximum average response time for each user:
+-----------------------------------------------------------------------------------------------------------------------------------------------
+SELECT user_id, API_ID, AVG(response_time) as avg_response_time
+FROM monitoring_data
+GROUP BY user_id, API_ID
+ORDER BY avg_response_time DESC
+-----------------------------------------------------------------------------------------------------------------------------------------------
+Get error percentage of each API in buckets of 1 hours for 24 hours:
+-----------------------------------------------------------------------------------------------------------------------------------------------
+SELECT API_ID, HOUR(timestamp) as hour,
+    AVG(CASE WHEN success = false THEN 1 ELSE 0 END) as error_percentage
+FROM monitoring_data
+GROUP BY API_ID, HOUR(timestamp)
+-----------------------------------------------------------------------------------------------------------------------------------------------
+These queries should be able to provide the necessary monitoring data for the service.
